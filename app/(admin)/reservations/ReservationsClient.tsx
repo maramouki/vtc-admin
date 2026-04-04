@@ -241,9 +241,9 @@ export default function ReservationsClient({
                 <span>✉</span>
                 Renvoyer le mail
               </button>
-              {selected?.stripe_payment_id && (
+              {(selected?.stripe_payment_id as string) && (
                 <a
-                  href={`https://dashboard.stripe.com/payments/${selected.stripe_payment_id}`}
+                  href={`https://dashboard.stripe.com/payments/${selected?.stripe_payment_id as string}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-2.5 border border-gray-200 text-sm rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2"
@@ -285,11 +285,11 @@ export default function ReservationsClient({
                 <PrestationBadge type={selected.type_prestation as string} />
               </div>
               <DetailRow label="Véhicule" value={selected.type_vehicule as string} />
-              {selected.duree_mad && <DetailRow label="Durée MAD" value={`${selected.duree_mad} h`} />}
+              {(selected.duree_mad as string | number) && <DetailRow label="Durée MAD" value={`${selected.duree_mad} h`} />}
               <DetailRow label="Passagers" value={String(selected.nb_passagers || "—")} />
               <DetailRow label="Bagages" value={String(selected.nb_bagages || "—")} />
-              {selected.numero_vol_train && <DetailRow label="Vol/Train" value={selected.numero_vol_train as string} />}
-              {selected.notes_client && <DetailRow label="Notes" value={selected.notes_client as string} />}
+              {(selected.numero_vol_train as string) && <DetailRow label="Vol/Train" value={selected.numero_vol_train as string} />}
+              {(selected.notes_client as string) && <DetailRow label="Notes" value={selected.notes_client as string} />}
               {(() => {
                 try {
                   const opts = typeof selected.options_json === "string"
@@ -300,7 +300,7 @@ export default function ReservationsClient({
                     <div className="pt-1">
                       <p className="text-xs text-gray-500 mb-1">Options</p>
                       <div className="space-y-0.5">
-                        {opts.map((o, i: number) => (
+                        {opts.map((o: { nom?: string; option?: string; qte?: number }, i: number) => (
                           <div key={i} className="flex justify-between text-sm">
                             <span className="text-gray-700">{o.nom || o.option}</span>
                             <span className="text-gray-500 text-xs">×{o.qte || 1}</span>
