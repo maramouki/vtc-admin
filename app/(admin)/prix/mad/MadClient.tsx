@@ -59,7 +59,7 @@ export default function MadClient({ rows: initial, societeSlug, vehicles }: { ro
       startTransition(async () => {
         try {
           await updateTarifMadAction(id, formData);
-          setRows(rows.map((r) => (r.Id === id ? { ...r, ...formData } : r)));
+          setRows(rows.map((r) => (r.Id === id ? { ...r, ...formData } as TarifMad : r)));
           setSaved(id);
           setTimeout(() => setSaved(null), 2000);
           setDrawer(null);
