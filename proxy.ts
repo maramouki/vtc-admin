@@ -5,7 +5,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || "vtc-admin-secret-change-in-prod"
 );
 
-const PUBLIC_PATHS = ["/login", "/api/auth", "/book", "/api/book"];
+const PUBLIC_PATHS = ["/login", "/api/auth", "/book", "/api/book", "/api/super-admin/auth"];
 const SUPER_ADMIN_PATHS = ["/super-admin"];
 
 export async function proxy(req: NextRequest) {
