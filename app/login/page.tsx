@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [slug, setSlug] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,13 +19,13 @@ export default function LoginPage() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, password }),
+      body: JSON.stringify({ email, password }),
     });
 
     if (res.ok) {
       router.push("/dashboard");
     } else {
-      setError("Identifiants incorrects.");
+      setError("Email ou mot de passe incorrect.");
     }
     setLoading(false);
   }
@@ -40,14 +41,15 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Identifiant société
+              Email
             </label>
             <input
-              type="text"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              placeholder="grenoble-vtc-premium"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="contact@votre-societe.fr"
               required
+              autoComplete="email"
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 transition-colors"
             />
           </div>
@@ -61,6 +63,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              autoComplete="current-password"
               className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 transition-colors"
             />
           </div>
@@ -76,6 +79,12 @@ export default function LoginPage() {
           >
             {loading ? "Connexion…" : "Se connecter"}
           </button>
+
+          <div className="text-center">
+            <Link href="/login/reset-request" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+              Mot de passe oublié ?
+            </Link>
+          </div>
         </form>
       </div>
     </div>
