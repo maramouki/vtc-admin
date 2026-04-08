@@ -37,6 +37,7 @@ export default function FlotteClient({ rows: initial }: { rows: Vehicule[] }) {
   const [rows, setRows] = useState<Vehicule[]>(initial);
   const [adding, setAdding] = useState(false);
   const [newRow, setNewRow] = useState<Partial<Vehicule>>(EMPTY);
+  const [addPending, setAddPending] = useState(false);
   const [editing, setEditing] = useState<Vehicule | null>(null);
   const [editData, setEditData] = useState<Partial<Vehicule>>({});
   const [deleteId, setDeleteId] = useState<number | null>(null);
@@ -82,6 +83,7 @@ export default function FlotteClient({ rows: initial }: { rows: Vehicule[] }) {
     if (!newRow.marque || !newRow.modele) { setError("Marque et modèle requis."); return; }
     if (isDuplicate) { setError(`${newRow.marque} ${newRow.modele} existe déjà dans la flotte.`); return; }
     setError("");
+    setAddPending(true);
     startTransition(async () => {
       try {
         await createVehiculeAction(newRow as Record<string, unknown>);
@@ -90,6 +92,8 @@ export default function FlotteClient({ rows: initial }: { rows: Vehicule[] }) {
         setNewRow(EMPTY);
       } catch {
         setError("Erreur lors de la création.");
+      } finally {
+        setAddPending(false);
       }
     });
   }
@@ -112,61 +116,17 @@ export default function FlotteClient({ rows: initial }: { rows: Vehicule[] }) {
       {error && <p className="mb-4 text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{error}</p>}
 
       <div className="mb-4">
-        {!adding ? (
-          <button onClick={() => setAdding(true)} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
-            + Ajouter un véhicule
-          </button>
-        ) : (
-          <div className="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 mb-2">
-            <p className="text-sm font-medium text-gray-700 mb-3">Nouveau véhicule</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              <FormField label="Marque *">
-                <input type="text" placeholder="Mercedes" value={newRow.marque || ""} onChange={(e) => setNewRow({ ...newRow, marque: e.target.value })} className={`w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 ${isDuplicate ? "border-orange-400" : "border-gray-200"}`} />
-              </FormField>
-              <FormField label="Modèle *">
-                <input type="text" placeholder="Classe E" value={newRow.modele || ""} onChange={(e) => setNewRow({ ...newRow, modele: e.target.value })} className={`w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 ${isDuplicate ? "border-orange-400" : "border-gray-200"}`} />
-                {isDuplicate && <p className="text-xs text-orange-600 mt-1">Ce véhicule existe déjà dans la flotte.</p>}
-              </FormField>
-              <FormField label="Immatriculation">
-                <input type="text" placeholder="AB-123-CD" value={newRow.immatriculation || ""} onChange={(e) => setNewRow({ ...newRow, immatriculation: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
-              </FormField>
-              <FormField label="Couleur">
-                <input type="text" placeholder="Noir" value={newRow.couleur || ""} onChange={(e) => setNewRow({ ...newRow, couleur: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
-              </FormField>
-              <FormField label="Année">
-                <input type="number" placeholder="2023" value={newRow.annee ?? ""} onChange={(e) => setNewRow({ ...newRow, annee: e.target.value ? Number(e.target.value) : undefined })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
-              </FormField>
-              <FormField label="Catégorie">
-                <input type="text" placeholder="Berline / Van / Luxe" value={newRow.type_vehicule || ""} onChange={(e) => setNewRow({ ...newRow, type_vehicule: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
-              </FormField>
-              <FormField label="Passagers max">
-                <input type="number" min="1" placeholder="3" value={newRow.nb_passagers_max ?? ""} onChange={(e) => setNewRow({ ...newRow, nb_passagers_max: e.target.value ? Number(e.target.value) : undefined })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
-              </FormField>
-              <FormField label="Bagages max">
-                <input type="number" min="0" placeholder="3" value={newRow.nb_bagages_max ?? ""} onChange={(e) => setNewRow({ ...newRow, nb_bagages_max: e.target.value ? Number(e.target.value) : undefined })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
-              </FormField>
-              <FormField label="Photo">
-                <ImageUploadInput value={newRow.image_url} onChange={(v) => setNewRow({ ...newRow, image_url: v })} />
-              </FormField>
-              <FormField label="Disponible">
-                <div className="flex items-center h-9">
-                  <Switch checked={newRow.disponible ?? true} onChange={(v) => setNewRow({ ...newRow, disponible: v })} />
-                </div>
-              </FormField>
-            </div>
-            <div className="flex gap-2 mt-3">
-              <button onClick={addVehicule} disabled={isPending || isDuplicate} className="px-4 py-2 bg-gray-900 text-white text-sm rounded-lg hover:bg-gray-800 disabled:opacity-50">Ajouter</button>
-              <button onClick={() => { setAdding(false); setNewRow(EMPTY); }} className="px-4 py-2 border border-gray-200 text-sm text-gray-700 rounded-lg hover:bg-gray-50">Annuler</button>
-            </div>
-          </div>
-        )}
+        <button onClick={() => { setAdding(true); setNewRow(EMPTY); setError(""); }} className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+          + Ajouter un véhicule
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
         {rows.length === 0 ? (
           <p className="px-6 py-12 text-sm text-gray-600 text-center">Aucun véhicule dans la flotte</p>
         ) : (
-          <table className="w-full text-sm">
+          <table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="border-b border-gray-50">
                 <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Véhicule</th>
@@ -208,7 +168,72 @@ export default function FlotteClient({ rows: initial }: { rows: Vehicule[] }) {
             </tbody>
           </table>
         )}
+        </div>
       </div>
+
+      {/* Drawer ajout */}
+      <Drawer
+        open={adding}
+        onClose={() => { setAdding(false); setNewRow(EMPTY); setError(""); }}
+        title="Nouveau véhicule"
+        subtitle="Ajout à la flotte"
+        footer={
+          <div className="flex gap-3">
+            <button onClick={addVehicule} disabled={isPending || isDuplicate || addPending} className="flex-1 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-colors">
+              {addPending ? "Ajout…" : "Ajouter"}
+            </button>
+            <button onClick={() => { setAdding(false); setNewRow(EMPTY); setError(""); }} className="px-5 py-2.5 border border-gray-200 text-sm text-gray-700 rounded-xl hover:bg-gray-50 transition-colors">
+              Annuler
+            </button>
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <FormField label="Photo du véhicule">
+            <ImageUploadInput value={newRow.image_url} onChange={(v) => setNewRow({ ...newRow, image_url: v })} large />
+          </FormField>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Marque *">
+              <input type="text" placeholder="Mercedes" value={newRow.marque || ""} onChange={(e) => setNewRow({ ...newRow, marque: e.target.value })} className={`w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 ${isDuplicate ? "border-orange-400" : "border-gray-200"}`} />
+            </FormField>
+            <FormField label="Modèle *">
+              <input type="text" placeholder="Classe E" value={newRow.modele || ""} onChange={(e) => setNewRow({ ...newRow, modele: e.target.value })} className={`w-full px-3 py-2 border rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 ${isDuplicate ? "border-orange-400" : "border-gray-200"}`} />
+              {isDuplicate && <p className="text-xs text-orange-600 mt-1">Ce véhicule existe déjà.</p>}
+            </FormField>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Immatriculation">
+              <input type="text" placeholder="AB-123-CD" value={newRow.immatriculation || ""} onChange={(e) => setNewRow({ ...newRow, immatriculation: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
+            </FormField>
+            <FormField label="Couleur">
+              <input type="text" placeholder="Noir" value={newRow.couleur || ""} onChange={(e) => setNewRow({ ...newRow, couleur: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
+            </FormField>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Année">
+              <input type="number" placeholder="2023" value={newRow.annee ?? ""} onChange={(e) => setNewRow({ ...newRow, annee: e.target.value ? Number(e.target.value) : undefined })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
+            </FormField>
+            <FormField label="Catégorie">
+              <input type="text" placeholder="Berline / Van / Luxe" value={newRow.type_vehicule || ""} onChange={(e) => setNewRow({ ...newRow, type_vehicule: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
+            </FormField>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="Passagers max">
+              <input type="number" min="1" placeholder="3" value={newRow.nb_passagers_max ?? ""} onChange={(e) => setNewRow({ ...newRow, nb_passagers_max: e.target.value ? Number(e.target.value) : undefined })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
+            </FormField>
+            <FormField label="Bagages max">
+              <input type="number" min="0" placeholder="3" value={newRow.nb_bagages_max ?? ""} onChange={(e) => setNewRow({ ...newRow, nb_bagages_max: e.target.value ? Number(e.target.value) : undefined })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900" />
+            </FormField>
+          </div>
+          <FormField label="Disponible">
+            <div className="flex items-center gap-3 mt-1">
+              <Switch checked={newRow.disponible ?? true} onChange={(v) => setNewRow({ ...newRow, disponible: v })} />
+              <span className="text-sm text-gray-600">{newRow.disponible ? "Disponible" : "Indisponible"}</span>
+            </div>
+          </FormField>
+          {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{error}</p>}
+        </div>
+      </Drawer>
 
       {/* Drawer édition */}
       <Drawer

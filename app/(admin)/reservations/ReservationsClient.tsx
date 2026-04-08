@@ -170,15 +170,16 @@ export default function ReservationsClient({
               {localRows.length === 0 ? (
                 <p className="px-6 py-12 text-sm text-gray-500 text-center">Aucune réservation</p>
               ) : (
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[700px]">
                   <thead>
                     <tr className="border-b border-gray-50">
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden sm:table-cell">Référence</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Référence</th>
                       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Client</th>
                       <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Date</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden lg:table-cell">Type</th>
-                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden lg:table-cell">Véhicule</th>
-                      <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden md:table-cell">Total</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Véhicule</th>
+                      <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
                       <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Statut</th>
                     </tr>
                   </thead>
@@ -189,18 +190,18 @@ export default function ReservationsClient({
                         onClick={() => { setSelected(r); setEmailSent(false); setEmailError(""); }}
                         className={`border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${selected?.Id === r.Id ? "bg-blue-50/30" : ""}`}
                       >
-                        <td className="px-4 py-3.5 font-mono text-xs text-gray-700 hidden sm:table-cell">{r.reference as string}</td>
-                        <td className="px-4 py-3.5 text-gray-900 font-medium">{r.prenom_client as string} {r.nom_client as string}</td>
+                        <td className="px-4 py-3.5 font-mono text-xs text-gray-700 whitespace-nowrap">{r.reference as string}</td>
+                        <td className="px-4 py-3.5 text-gray-900 font-medium whitespace-nowrap">{r.prenom_client as string} {r.nom_client as string}</td>
                         <td className="px-4 py-3.5 text-gray-700 whitespace-nowrap text-xs">
                           {r.date_prise_en_charge
                             ? new Date(r.date_prise_en_charge as string).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit" })
                             : "—"}
                         </td>
-                        <td className="px-4 py-3.5 hidden lg:table-cell"><PrestationBadge type={r.type_prestation as string} /></td>
-                        <td className="px-4 py-3.5 text-gray-700 hidden lg:table-cell">{r.type_vehicule as string}</td>
-                        <td className="px-4 py-3.5 text-right font-semibold text-gray-900 hidden md:table-cell">{r.prix_total as number} €</td>
+                        <td className="px-4 py-3.5"><PrestationBadge type={r.type_prestation as string} /></td>
+                        <td className="px-4 py-3.5 text-gray-700 whitespace-nowrap">{r.type_vehicule as string}</td>
+                        <td className="px-4 py-3.5 text-right font-semibold text-gray-900 whitespace-nowrap">{r.prix_total as number} €</td>
                         <td className="px-4 py-3.5 text-right">
-                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUT_COLOR[r.statut as string] || "bg-gray-50 text-gray-600"}`}>
+                          <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${STATUT_COLOR[r.statut as string] || "bg-gray-50 text-gray-600"}`}>
                             {STATUT_LABEL[r.statut as string] || r.statut as string}
                           </span>
                         </td>
@@ -208,6 +209,7 @@ export default function ReservationsClient({
                     ))}
                   </tbody>
                 </table>
+                </div>
               )}
             </div>
             {totalPages > 1 && (
