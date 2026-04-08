@@ -13,6 +13,7 @@ const STATUTS_FILTER = [
   { value: "en_cours", label: "En cours" },
   { value: "terminee", label: "Terminée" },
   { value: "annulee", label: "Annulée" },
+  { value: "sur_devis", label: "Sur devis" },
 ];
 
 const STATUTS_CHANGE = [
@@ -29,6 +30,16 @@ const STATUT_COLOR: Record<string, string> = {
   en_cours: "bg-blue-50 text-blue-700",
   terminee: "bg-gray-50 text-gray-600",
   annulee: "bg-red-50 text-red-600",
+  sur_devis: "bg-purple-50 text-purple-700",
+};
+
+const STATUT_LABEL: Record<string, string> = {
+  nouvelle: "Nouvelle",
+  confirmee: "Confirmée",
+  en_cours: "En cours",
+  terminee: "Terminée",
+  annulee: "Annulée",
+  sur_devis: "Sur devis",
 };
 
 type Reservation = Record<string, unknown>;
@@ -118,7 +129,7 @@ export default function ReservationsClient({
   return (
     <div>
       <div>
-        <div className="flex gap-2 mb-5 flex-wrap items-center">
+        <div className="flex gap-2 mb-5 flex-wrap items-center overflow-x-auto pb-1">
           {STATUTS_FILTER.map((s) => (
             <button
               key={s.value}
@@ -162,13 +173,13 @@ export default function ReservationsClient({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-50">
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Référence</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Client</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Date</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Type</th>
-                      <th className="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Véhicule</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Total</th>
-                      <th className="text-right px-5 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Statut</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden sm:table-cell">Référence</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Client</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Date</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden lg:table-cell">Type</th>
+                      <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden lg:table-cell">Véhicule</th>
+                      <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide hidden md:table-cell">Total</th>
+                      <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Statut</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -178,19 +189,19 @@ export default function ReservationsClient({
                         onClick={() => { setSelected(r); setEmailSent(false); setEmailError(""); }}
                         className={`border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors ${selected?.Id === r.Id ? "bg-blue-50/30" : ""}`}
                       >
-                        <td className="px-5 py-3.5 font-mono text-xs text-gray-700">{r.reference as string}</td>
-                        <td className="px-5 py-3.5 text-gray-900 font-medium">{r.prenom_client as string} {r.nom_client as string}</td>
-                        <td className="px-5 py-3.5 text-gray-700 whitespace-nowrap">
+                        <td className="px-4 py-3.5 font-mono text-xs text-gray-700 hidden sm:table-cell">{r.reference as string}</td>
+                        <td className="px-4 py-3.5 text-gray-900 font-medium">{r.prenom_client as string} {r.nom_client as string}</td>
+                        <td className="px-4 py-3.5 text-gray-700 whitespace-nowrap text-xs">
                           {r.date_prise_en_charge
                             ? new Date(r.date_prise_en_charge as string).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "2-digit", hour: "2-digit", minute: "2-digit" })
                             : "—"}
                         </td>
-                        <td className="px-5 py-3.5"><PrestationBadge type={r.type_prestation as string} /></td>
-                        <td className="px-5 py-3.5 text-gray-700">{r.type_vehicule as string}</td>
-                        <td className="px-5 py-3.5 text-right font-semibold text-gray-900">{r.prix_total as number} €</td>
-                        <td className="px-5 py-3.5 text-right">
+                        <td className="px-4 py-3.5 hidden lg:table-cell"><PrestationBadge type={r.type_prestation as string} /></td>
+                        <td className="px-4 py-3.5 text-gray-700 hidden lg:table-cell">{r.type_vehicule as string}</td>
+                        <td className="px-4 py-3.5 text-right font-semibold text-gray-900 hidden md:table-cell">{r.prix_total as number} €</td>
+                        <td className="px-4 py-3.5 text-right">
                           <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUT_COLOR[r.statut as string] || "bg-gray-50 text-gray-600"}`}>
-                            {r.statut as string}
+                            {STATUT_LABEL[r.statut as string] || r.statut as string}
                           </span>
                         </td>
                       </tr>
@@ -371,6 +382,7 @@ const STATUT_CAL_COLOR: Record<string, string> = {
   en_cours: "bg-blue-100 text-blue-800 border-blue-200",
   terminee: "bg-gray-100 text-gray-600 border-gray-200",
   annulee: "bg-red-100 text-red-700 border-red-200",
+  sur_devis: "bg-purple-100 text-purple-800 border-purple-200",
 };
 
 function CalendarView({
