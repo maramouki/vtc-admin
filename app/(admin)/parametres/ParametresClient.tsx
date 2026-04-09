@@ -71,6 +71,7 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
   }
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{error}</p>}
 
@@ -214,6 +215,7 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
         </div>
       </div>
     </form>
+    </>
   );
 }
 
