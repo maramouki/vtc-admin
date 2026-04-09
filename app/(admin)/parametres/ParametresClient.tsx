@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateSocieteAction } from "./actions";
+import { updateSocieteAction, changePasswordAction } from "./actions";
 
 type Societe = {
   Id: number;
@@ -28,6 +28,29 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+
+  const [pwd, setPwd] = useState({ nouveau: "", confirmer: "" });
+  const [pwdPending, startPwdTransition] = useTransition();
+  const [pwdSaved, setPwdSaved] = useState(false);
+  const [pwdError, setPwdError] = useState("");
+
+  function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault();
+    if (!societe?.Id) return;
+    if (pwd.nouveau.length < 8) { setPwdError("8 caractères minimum."); return; }
+    if (pwd.nouveau !== pwd.confirmer) { setPwdError("Les mots de passe ne correspondent pas."); return; }
+    setPwdError("");
+    startPwdTransition(async () => {
+      try {
+        await changePasswordAction(societe.Id, pwd.nouveau);
+        setPwd({ nouveau: "", confirmer: "" });
+        setPwdSaved(true);
+        setTimeout(() => setPwdSaved(false), 3000);
+      } catch {
+        setPwdError("Erreur lors du changement de mot de passe.");
+      }
+    });
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -151,6 +174,44 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
           {isPending ? "Sauvegarde…" : "Sauvegarder"}
         </button>
         {saved && <span className="text-sm text-green-600">Sauvegardé</span>}
+      </div>
+    </form>
+
+    <form onSubmit={handlePasswordChange} className="mt-6">
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
+        <h2 className="font-semibold text-gray-900">Changer le mot de passe</h2>
+        {pwdError && <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{pwdError}</p>}
+
+        <Field label="Nouveau mot de passe" hint="8 caractères minimum">
+          <input
+            type="password"
+            value={pwd.nouveau}
+            onChange={(e) => setPwd({ ...pwd, nouveau: e.target.value })}
+            placeholder="••••••••"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 transition-colors"
+          />
+        </Field>
+
+        <Field label="Confirmer le mot de passe">
+          <input
+            type="password"
+            value={pwd.confirmer}
+            onChange={(e) => setPwd({ ...pwd, confirmer: e.target.value })}
+            placeholder="••••••••"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 transition-colors"
+          />
+        </Field>
+
+        <div className="flex items-center gap-4">
+          <button
+            type="submit"
+            disabled={pwdPending}
+            className="px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          >
+            {pwdPending ? "Mise à jour…" : "Changer le mot de passe"}
+          </button>
+          {pwdSaved && <span className="text-sm text-green-600">Mot de passe mis à jour</span>}
+        </div>
       </div>
     </form>
   );
