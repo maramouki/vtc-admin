@@ -29,7 +29,7 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
-  const [pwd, setPwd] = useState({ nouveau: "", confirmer: "" });
+  const [pwd, setPwd] = useState({ actuel: "", nouveau: "", confirmer: "" });
   const [pwdPending, startPwdTransition] = useTransition();
   const [pwdSaved, setPwdSaved] = useState(false);
   const [pwdError, setPwdError] = useState("");
@@ -37,13 +37,14 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
   function handlePasswordChange(e: React.FormEvent) {
     e.preventDefault();
     if (!societe?.Id) return;
+    if (!pwd.actuel) { setPwdError("Veuillez saisir votre mot de passe actuel."); return; }
     if (pwd.nouveau.length < 8) { setPwdError("8 caractères minimum."); return; }
     if (pwd.nouveau !== pwd.confirmer) { setPwdError("Les mots de passe ne correspondent pas."); return; }
     setPwdError("");
     startPwdTransition(async () => {
       try {
-        await changePasswordAction(societe.Id, pwd.nouveau);
-        setPwd({ nouveau: "", confirmer: "" });
+        await changePasswordAction(societe.Id, pwd.actuel, pwd.nouveau);
+        setPwd({ actuel: "", nouveau: "", confirmer: "" });
         setPwdSaved(true);
         setTimeout(() => setPwdSaved(false), 3000);
       } catch {
@@ -182,6 +183,16 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
       <div className="bg-white rounded-2xl border border-gray-100 p-6 space-y-5">
         <h2 className="font-semibold text-gray-900">Changer le mot de passe</h2>
         {pwdError && <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{pwdError}</p>}
+
+        <Field label="Mot de passe actuel">
+          <input
+            type="password"
+            value={pwd.actuel}
+            onChange={(e) => setPwd({ ...pwd, actuel: e.target.value })}
+            placeholder="••••••••"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 transition-colors"
+          />
+        </Field>
 
         <Field label="Nouveau mot de passe" hint="8 caractères minimum">
           <input

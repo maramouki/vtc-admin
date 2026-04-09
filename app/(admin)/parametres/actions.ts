@@ -12,9 +12,14 @@ export async function updateSocieteAction(id: number, data: Record<string, unkno
   revalidatePath("/parametres");
 }
 
-export async function changePasswordAction(societeId: number, newPassword: string) {
+export async function changePasswordAction(societeId: number, currentPassword: string, newPassword: string) {
   const session = await getSession();
   if (!session) throw new Error("Non autorisé");
+  const { getSociete } = await import("@/lib/nocodb");
+  const societe = await getSociete(session.societeSlug);
+  if (!societe?.password_hash) throw new Error("Société introuvable");
+  const valid = await bcrypt.compare(currentPassword, societe.password_hash);
+  if (!valid) throw new Error("Mot de passe actuel incorrect");
   const hash = await bcrypt.hash(newPassword, 12);
   await updateSociete(societeId, { password_hash: hash });
 }
