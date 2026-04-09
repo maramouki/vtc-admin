@@ -8,7 +8,13 @@ export async function POST(req: NextRequest) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...body, base_url: origin }),
   });
-  const data = await res.json();
+  const text = await res.text();
+  let data: unknown;
+  try {
+    data = JSON.parse(text);
+  } catch {
+    return NextResponse.json({ success: false, error: `n8n error (${res.status}): ${text.slice(0, 200)}` }, { status: 500 });
+  }
   if (!res.ok) return NextResponse.json(data, { status: res.status });
   return NextResponse.json(data);
 }
