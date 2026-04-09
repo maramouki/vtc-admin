@@ -12,6 +12,7 @@ type Societe = {
   siret?: string;
   logo_url?: string;
   couleur_primaire?: string;
+  domaine_perso?: string;
 } | null;
 
 export default function ParametresClient({ societe, slug }: { societe: Societe; slug: string }) {
@@ -22,6 +23,7 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
     siret: societe?.siret || "",
     logo_url: societe?.logo_url || "",
     couleur_primaire: societe?.couleur_primaire || "",
+    domaine_perso: societe?.domaine_perso || "",
   });
   const [isPending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
@@ -125,6 +127,16 @@ export default function ParametresClient({ societe, slug }: { societe: Societe; 
             value={form.couleur_primaire}
             onChange={(e) => setForm({ ...form, couleur_primaire: e.target.value })}
             placeholder="#1a1a2e"
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 transition-colors"
+          />
+        </Field>
+
+        <Field label="Domaine personnalisé" hint="Ex: reservations.monvtc.fr (optionnel)">
+          <input
+            type="text"
+            value={form.domaine_perso}
+            onChange={(e) => setForm({ ...form, domaine_perso: e.target.value })}
+            placeholder="reservations.monvtc.fr"
             className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white focus:outline-none focus:border-gray-900 transition-colors"
           />
         </Field>
